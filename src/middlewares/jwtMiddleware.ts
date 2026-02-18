@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 interface DecodedToken {
   cedulaPlanillero: number;
   nombreCompleto: string;
+  isAdmin: boolean;
   iat: number;
   exp: number;
 }
@@ -26,6 +27,7 @@ export const decodeToken = (token: string): DecodedToken | null => {
     return {
       cedulaPlanillero: decoded.cedulaPlanillero,
       nombreCompleto: decoded.nombreCompleto,
+      isAdmin: decoded.isAdmin,
       iat: decoded.iat,
       exp: decoded.exp,
     };

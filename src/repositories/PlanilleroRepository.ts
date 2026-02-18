@@ -3,12 +3,13 @@ import logger from "../config/logger";
 import { pool } from "../infrastructure/database/dbConnection";
 import { AppError } from "../middlewares/errorHandler";
 import { CreatePlanilleroDTO } from '../models/Planillero';
+import { LoginResponse } from '../models/Access';
 
 export interface IPlanilleroRepository {
     loginAccount(
         cedulaPlanillero: number,
         password: string
-    ): Promise<{ isAdmin: boolean }>;
+    ): Promise<LoginResponse>;
     registerPlanillero(data: CreatePlanilleroDTO): Promise<void>
 }
 
@@ -17,17 +18,17 @@ export class PlanilleroRepository implements IPlanilleroRepository {
     async loginAccount(
         cedulaPlanillero: number,
         password: string
-    ): Promise<{ isAdmin: boolean }> {
+    ): Promise<LoginResponse> {
 
         const result = await pool.query(
-            `SELECT cedula_planillero, password_hash, rol
+            `SELECT cedula_planillero, nombre_completo, password_hash, rol
              FROM planilleros
              WHERE cedula_planillero = $1`,
             [cedulaPlanillero]
         );
 
         if (result.rows.length === 0) {
-            throw new AppError("Credenciales inválidas", 401);
+            throw new AppError("Usuario no encontrado", 401);
         }
 
         const planillero = result.rows[0];
@@ -42,7 +43,9 @@ export class PlanilleroRepository implements IPlanilleroRepository {
         }
 
         return {
-            isAdmin: planillero.rol === 'admin'
+            cedulaPlanillero: planillero.cedula_planillero,
+            nombreCompleto: planillero.nombre_completo,
+            isAdmin: planillero.rol === 'admin',
         };
     }
 

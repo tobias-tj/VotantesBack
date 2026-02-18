@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { PlanilleroService } from "../services/PlanilleroService";
+import { SECRET_KEY } from "../middlewares/jwtMiddleware";
+import logger from "../config/logger";
+import jwt from "jsonwebtoken";
 
 
 export class AccessCheckoutController{
@@ -20,9 +23,27 @@ export class AccessCheckoutController{
             password
         );
 
+        const token = jwt.sign(
+            {
+                cedulaPlanillero: result.cedulaPlanillero,
+                nombreCompleto: result.nombreCompleto,
+                isAdmin: result.isAdmin,
+            },
+            SECRET_KEY || '',
+            {
+                expiresIn: '1h',
+            },  
+        );
+
+      logger.info('El token generado exitosamente');
+
         return res.status(200).json({
             success: true,
-            data: result
+            data: {
+                result,
+                token,
+            },
+            message: "Inicio de sesión exitoso"
         });
 
         } catch (error) {
@@ -32,6 +53,11 @@ export class AccessCheckoutController{
 
     registerPlanillero = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
         const { cedulaPlanillero, nombreCompleto, password } = req.body;
 
         await this.planilleroService.registerPlanillero({

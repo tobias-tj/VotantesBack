@@ -3,6 +3,7 @@ import { PlanillaService } from "../services/PlanillaService";
 import { NextFunction, Request, Response } from "express";
 import { CreatePlanillaDTO } from "../models/Planilla";
 import logger from "../config/logger";
+import { decodeToken } from "../middlewares/jwtMiddleware";
 
 export class PlanillaController {
     constructor(private planillaService: PlanillaService) {}
@@ -13,29 +14,53 @@ export class PlanillaController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const { cedulaDirigente, nombreDirigente, cedulaPlanillero, cedulasVotantes } = req.body;
 
-            console.log("cedulasVotantes", cedulasVotantes);
+            const authHeader = req.headers.authorization;
+            const token =
+                authHeader && authHeader.startsWith('Bearer ')
+                    ? authHeader.substring(7)
+                    : null;
+
+            if (!token) return res.status(401);
+
+            const decoded = decodeToken(token);
+
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto) {
+                return res
+                    .status(401)
+                    .json({ error: 'Error autenticando Token, faltan datos' });
+            }
+
+
+            const { cedulaDirigente, nombreDirigente, cedulasVotantes } = req.body;
 
             const cedulasArray =
                 Array.isArray(cedulasVotantes)
                     ? cedulasVotantes
                     : cedulasVotantes.split(',').map((c: string) => Number(c.trim()));
             
-            console.log("cedulasArray", cedulasArray);
 
             const planilla: CreatePlanillaDTO = {
                 cedulaDirigente: Number(cedulaDirigente),
                 nombreDirigente,
-                cedulaPlanillero: Number(cedulaPlanillero),
+                cedulaPlanillero: decoded.cedulaPlanillero,
                 cedulasVotantes: cedulasArray,
             };
 
-            const planillaId = await this.planillaService.createPlanilla(planilla);       
+            const planillaResponse = await this.planillaService.createPlanilla(planilla);      
             
+            if(!planillaResponse.planillaId){
+                return res.status(400).json({
+                    success: false,
+                    data: planillaResponse,
+                    message: "No se pudo crear la planilla"
+                });
+            }
+
             return res.status(201).json({
                 success: true,
-                data: { id: planillaId }
+                data: planillaResponse,
+                message: "Planilla creada exitosamente"
             });
         } catch (error) {
             next(error);

@@ -5,13 +5,7 @@ export class PlanillaService {
     constructor(private planillaRepository: IPlanillaRepository) {}
 
 
-    async createPlanilla(planilla: CreatePlanillaDTO): Promise<number> {
-        const planillaId = await this.planillaRepository.createPlanilla(planilla);
-
-        if (!planillaId) {
-            throw new Error('No se pudo crear la planilla');
-        }
-
-        return planillaId;
+    async createPlanilla(planilla: CreatePlanillaDTO) {
+        return await this.planillaRepository.createPlanilla(planilla);
     }
 }

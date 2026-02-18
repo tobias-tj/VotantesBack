@@ -4,3 +4,8 @@ export interface CreatePlanillaDTO {
     cedulaPlanillero: number;
     cedulasVotantes: number[];
 }
+
+export interface PlanillaResponseDTO {
+    planillaId: number;
+    cedulasRepetidas: number[];
+}

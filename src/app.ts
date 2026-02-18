@@ -29,6 +29,149 @@ const swaggerOptions = {
         url: `http://localhost:${env.port}`,
       },
     ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },  
+      schemas: {
+        // LOGIN REQUEST
+        Login: {
+          type: 'object',
+          required: ['cedulaPlanillero', 'password'],
+          properties: {
+            cedulaPlanillero: {
+              type: 'number',
+              example: 1234567,
+            },
+            password: {
+              type: 'string',
+              example: 'password',
+            },
+          },
+        },
+
+        // LOGIN RESPONSE
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            data: {
+              type: 'object',
+              properties: {
+                result: {
+                  type: 'object',
+                  properties: {
+                    cedulaPlanillero: {
+                      type: 'number',
+                      example: 1234567,
+                    },
+                    isAdmin: {
+                      type: 'boolean',
+                      example: true,
+                    },
+                  },
+                },
+                token: {
+                  type: 'string',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                },
+              },
+            },
+            message: {
+              type: 'string',
+              example: 'Login exitoso',
+            },
+          },
+        },
+
+        // REGISTER REQUEST
+        Register: {
+          type: 'object',
+          required: ['cedulaPlanillero', 'nombreCompleto', 'password'],
+          properties: {
+            cedulaPlanillero: {
+              type: 'number',
+              example: 1234567,
+            },
+            nombreCompleto: {
+              type: 'string',
+              example: 'Rodolfo Waled',
+            },
+            password: {
+              type: 'string',
+              example: '123456',
+            },
+          },
+        },
+
+        // REGISTER RESPONSE
+        RegisterResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Planillero registrado correctamente',
+            },
+          },
+        },
+
+        // CREATE PLANILLA DTO
+        CreatePlanillaDTO: {
+          type: 'object',
+          required: ['cedulaDirigente', 'nombreDirigente', 'cedulasVotantes'],
+          properties: {
+            cedulaDirigente: {
+              type: 'number',
+              example: 1234567,
+            },
+            nombreDirigente: {
+              type: 'string',
+              example: 'Rodolfo Waled',
+            },
+            cedulasVotantes: {
+              type: 'array',
+              items: {
+                type: 'number',
+                example: 1234567,
+              },
+            }
+          },
+        },
+
+        // PLANILLA RESPONSE
+        Planilla: {
+          type: 'object',
+          properties: {
+            planillaId: {
+              type: 'integer',
+              example: 1,
+            },
+            cedulasRepetidas: {
+              type: 'array',
+              items: {
+                type: 'number',
+                example: 1234567,
+              },
+            },
+            message: {
+              type: 'string',
+              example: 'Planilla creada exitosamente',
+            },
+          },
+        },
+      },
+    },
   },
   apis: ['./src/routes/*.ts'], // Path to the API docs
 };

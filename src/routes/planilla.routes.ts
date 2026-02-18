@@ -18,6 +18,8 @@ const planillaController = new PlanillaController(planillaService);
  *   post:
  *     summary: Crear una planilla
  *     tags: [Planilla]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
