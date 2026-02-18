@@ -3,6 +3,7 @@ import { PlanillaRepository } from "../repositories/PlanillaRepository";
 import { PlanillaService } from "../services/PlanillaService";
 import { PlanillaController } from "../controllers/PlanillaController";
 import { planillaCreateValidation } from "../middlewares/planillaCreateValidation";
+import { planillaGetValidation } from "../middlewares/planillaGetValidation";
 
 const router = Router();
 
@@ -37,5 +38,55 @@ const planillaController = new PlanillaController(planillaService);
 router.post('/create',
     [...planillaCreateValidation],
     planillaController.createPlanilla);
+
+
+/**
+ * @swagger
+ * /planilla/obtenerPlanillas:
+ *   get:
+ *     summary: Obtener planillas
+ *     tags: [Planilla]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: filterText
+ *         in: query
+ *         description: Texto de filtro
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: dateFrom
+ *         in: query
+ *         description: Fecha de inicio
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: dateTo
+ *         in: query
+ *         description: Fecha de fin
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: filterSize
+ *         in: query
+ *         description: Tamaño de la página
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: filterPage
+ *         in: query
+ *         description: Número de página
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Planillas obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PlanillaGetValidationResponse'
+ */
+router.get('/obtenerPlanillas',[...planillaGetValidation], planillaController.getPlanillas);
 
 export default router;

@@ -1,4 +1,4 @@
-import { CreatePlanillaDTO } from "../models/Planilla";
+import { CreatePlanillaDTO, GetPlanillaDTO } from "../models/Planilla";
 import { IPlanillaRepository } from "../repositories/PlanillaRepository";
 
 export class PlanillaService {
@@ -7,5 +7,9 @@ export class PlanillaService {
 
     async createPlanilla(planilla: CreatePlanillaDTO) {
         return await this.planillaRepository.createPlanilla(planilla);
+    }
+
+    async getPlanillas(planillaDTO: GetPlanillaDTO) {
+        return await this.planillaRepository.getPlanillas(planillaDTO);
     }
 }

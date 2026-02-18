@@ -170,6 +170,163 @@ const swaggerOptions = {
             },
           },
         },
+        // PLANILLA GET VALIDATION
+      PlanillaGetValidation: {
+        type: 'object',
+        properties: {
+          filterText: {
+            type: 'string',
+            example: 'text',
+          },
+          filterDate: {
+            type: 'string',
+            example: '2022-01-01',
+          },
+          filterSize: {
+            type: 'integer',
+            example: 10,
+          },
+          filterPage: {
+            type: 'integer',
+            example: 1,
+          },
+        },
+      },
+
+      // Planilla Get Validation Response
+      PlanillaGetValidationResponse: {
+        type: 'object',
+        properties: {
+          success: {
+            type: 'boolean',
+            example: true,
+          },
+          data: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'integer',
+                  example: 1,
+                },
+                cedulaDirigente: {
+                  type: 'number',
+                  example: 1234567,
+                },
+                nombreDirigente: {
+                  type: 'string',
+                  example: 'Rodolfo Waled',
+                },
+                fechaCreacion: {
+                  type: 'string',
+                  example: '2022-01-01',
+                },
+                cedulaPlanillero: {
+                  type: 'number',
+                  example: 1234567,
+                },
+                totalEnviados: {
+                  type: 'integer',
+                  example: 10,
+                },
+                totalValidos: {
+                  type: 'integer',
+                  example: 10,
+                },
+                totalNoExistentes: {
+                  type: 'integer',
+                  example: 10,
+                },
+                votantes: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      cedula: {
+                        type: 'number',
+                        example: 1234567,
+                      },
+                      nombre: {
+                        type: 'string',
+                        example: 'Rodolfo Waled',
+                      },
+                      apellido: {
+                        type: 'string',
+                        example: 'Waled',
+                      },
+                      sexo: {
+                        type: 'string',
+                        example: "masculino"
+                      },
+                      fechaNacimiento: {
+                        type: 'string',
+                        example: '2022-01-01'
+                      },
+                      fechaInscripcion: {
+                        type: 'string',
+                        example: '2022-01-01'
+                      },
+                      tipo: {
+                        type: 'string',
+                        example: 'votante'
+                      },
+                      direccion: {
+                        type: 'string',
+                        example: 'Calle 123'
+                      },
+                      votoPlra: {
+                        type: 'string',
+                        example: 'votoPlra'
+                      },
+                      votoAnr: {
+                        type: 'string',
+                        example: 'votoAnr'
+                      },
+                      votoGenerales: {
+                        type: 'string',
+                        example: 'votoGenerales'
+                      },
+                      afiliaciones: {
+                        type: 'string',
+                        example: 'afiliaciones'
+                      },
+                      afiliadoPlra2025: {
+                        type: 'string',
+                        example: 'afiliadoPlra2025'
+                      },
+                      departamentoNombre: {
+                        type: 'string',
+                        example: 'departamentoNombre'
+                      },
+                      distritoNombre: {
+                        type: 'string',
+                        example: 'distritoNombre'
+                      },
+                      zonaNombre: {
+                        type: 'string',
+                        example: 'zonaNombre'
+                      },
+                      comiteNombre: {
+                        type: 'string',
+                        example: 'comiteNombre'
+                      },
+                      localGenerales: {
+                        type: 'string',
+                        example: 'localGenerales'
+                      },
+                      localInterna: {
+                        type: 'string',
+                        example: 'localInterna'
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+       },
       },
     },
   },

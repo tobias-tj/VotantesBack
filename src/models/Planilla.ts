@@ -1,3 +1,5 @@
+import { Votante } from "./Votante";
+
 export interface CreatePlanillaDTO {
     cedulaDirigente: number;
     nombreDirigente: string;
@@ -9,3 +11,25 @@ export interface PlanillaResponseDTO {
     planillaId: number;
     cedulasRepetidas: number[];
 }
+
+export interface GetPlanillaDTO {
+    filterText?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    filterSize: number;
+    filterPage: number;
+}
+
+export interface GetPlanillaResponseDTO{
+    id: number;
+    cedulaDirigente: number;
+    nombreDirigente: string;
+    fechaCreacion: Date;
+    cedulaPlanillero: number;
+    totalEnviados: number;
+    totalValidos: number;
+    totalNoExistentes: number;
+    votantes: Votante[]
+}
+
+ 

@@ -1,7 +1,7 @@
 import { validationResult } from "express-validator";
 import { PlanillaService } from "../services/PlanillaService";
 import { NextFunction, Request, Response } from "express";
-import { CreatePlanillaDTO } from "../models/Planilla";
+import { CreatePlanillaDTO, GetPlanillaDTO } from "../models/Planilla";
 import logger from "../config/logger";
 import { decodeToken } from "../middlewares/jwtMiddleware";
 
@@ -66,4 +66,53 @@ export class PlanillaController {
             next(error);
         }
     };
+
+
+    getPlanillas = async(req: Request, res: Response, next: NextFunction) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const authHeader = req.headers.authorization;
+            const token =
+                authHeader && authHeader.startsWith('Bearer ')
+                    ? authHeader.substring(7)
+                    : null;
+
+            if (!token) return res.status(401);
+
+            const decoded = decodeToken(token);
+
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto) {
+                return res
+                    .status(401)
+                    .json({ error: 'Error autenticando Token, faltan datos' });
+            }
+
+            const { filterText, dateFrom, dateTo, filterSize, filterPage } = req.query;
+
+            const planillaDTO: GetPlanillaDTO = {
+                filterText: filterText as string,
+                dateFrom: dateFrom as string,
+                dateTo: dateTo as string,
+                filterSize: Number(filterSize ?? 25),
+                filterPage: Number(filterPage ?? 1)
+            };
+
+            const planillas = await this.planillaService.getPlanillas(planillaDTO);
+
+            return res.status(200).json({
+                success: true,
+                data: planillas,
+                message: "Planillas obtenidas exitosamente"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
 }
