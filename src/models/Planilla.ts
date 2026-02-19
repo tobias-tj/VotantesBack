@@ -26,10 +26,11 @@ export interface GetPlanillaResponseDTO{
     nombreDirigente: string;
     fechaCreacion: Date;
     cedulaPlanillero: number;
+    nombrePlanillero: string;
     totalEnviados: number;
     totalValidos: number;
     totalNoExistentes: number;
-    votantes: Votante[]
+    votantes: Votante[];   
 }
 
  

@@ -50,6 +50,13 @@ export class PlanillaController {
             const planillaResponse = await this.planillaService.createPlanilla(planilla);      
             
             if(!planillaResponse.planillaId){
+                if(planillaResponse.cedulasRepetidas.length > 0){
+                    return res.status(400).json({
+                        success: false,
+                        data: planillaResponse,
+                        message: "Hay cedulas repetidas"
+                    });
+                }
                 return res.status(400).json({
                     success: false,
                     data: planillaResponse,
@@ -103,11 +110,7 @@ export class PlanillaController {
 
             const planillas = await this.planillaService.getPlanillas(planillaDTO);
 
-            return res.status(200).json({
-                success: true,
-                data: planillas,
-                message: "Planillas obtenidas exitosamente"
-            });
+            return res.status(200).json(planillas);
         } catch (error) {
             next(error);
         }

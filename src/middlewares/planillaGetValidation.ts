@@ -10,7 +10,12 @@ export const planillaGetValidation = [
         .isString()
         .withMessage('El filtro de texto debe ser una cadena.'),
 
-    query('filterDate')
+    query('dateFrom')
+        .optional()
+        .isString()
+        .withMessage('El filtro de fecha debe ser una cadena.'),
+
+    query('dateTo')
         .optional()
         .isString()
         .withMessage('El filtro de fecha debe ser una cadena.'),

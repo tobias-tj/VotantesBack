@@ -2,10 +2,11 @@ import { pool } from "../infrastructure/database/dbConnection";
 import { CreatePlanillaDTO, GetPlanillaDTO, GetPlanillaResponseDTO, PlanillaResponseDTO } from "../models/Planilla";
 import logger from "../config/logger";
 import { AppError } from "../middlewares/errorHandler";
+import { PaginatedResponse } from "../models/PaginatedResponse";
 
 export interface IPlanillaRepository {
    createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO>;   
-   getPlanillas(planillaDTO: GetPlanillaDTO): Promise<GetPlanillaResponseDTO[]>;
+   getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>>;
 }
 
 export class PlanillaRepository implements IPlanillaRepository {
@@ -42,7 +43,7 @@ export class PlanillaRepository implements IPlanillaRepository {
         }
     }
 
-    async getPlanillas(planillaDTO: GetPlanillaDTO): Promise<GetPlanillaResponseDTO[]> {
+    async getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>> {
         try {
 
             const size = Math.min(planillaDTO.filterSize || 25, 25);
@@ -51,40 +52,54 @@ export class PlanillaRepository implements IPlanillaRepository {
 
             const result = await pool.query(
             `
-            WITH planillas_paginadas AS (
-                SELECT
-                    p.id,
-                    p.cedula_dirigente,
-                    d.nombre_completo AS nombre_dirigente,
-                    p.fecha_creacion,
-                    p.cedula_planillero,
-                    p.total_enviados,
-                    p.total_validos,
-                    p.total_no_existentes
-                FROM planillas p
-                JOIN dirigentes d 
-                    ON d.cedula_dirigente = p.cedula_dirigente
-                WHERE
-                    (
-                        $1::text IS NULL
-                        OR p.cedula_dirigente::text = $1
-                        OR d.nombre_completo ILIKE '%' || $1 || '%'
-                    )
-                AND (
-                        $2::date IS NULL
-                        OR p.fecha_creacion >= $2
-                    )
-                AND (
-                        $3::date IS NULL
-                        OR p.fecha_creacion <= $3
-                    )
-                ORDER BY p.fecha_creacion DESC
+            WITH planillas_filtradas AS (
+            SELECT
+                p.id,
+                p.cedula_dirigente,
+                d.nombre_completo AS nombre_dirigente,
+                p.fecha_creacion,
+                p.cedula_planillero,
+                pl.nombre_completo AS nombre_planillero,
+                p.total_enviados,
+                p.total_validos,
+                p.total_no_existentes
+            FROM planillas p
+            JOIN dirigentes d 
+                ON d.cedula_dirigente = p.cedula_dirigente
+            JOIN planilleros pl
+                ON pl.cedula_planillero = p.cedula_planillero
+            WHERE
+                (
+                    $1::text IS NULL
+                    OR p.cedula_dirigente::text = $1
+                    OR d.nombre_completo ILIKE '%' || $1 || '%'
+                )
+            AND (
+                    $2::date IS NULL
+                    OR p.fecha_creacion >= $2
+                )
+            AND (
+                    $3::date IS NULL
+                    OR p.fecha_creacion <= $3
+                )
+            ),
+            total_count AS (
+                SELECT COUNT(*) AS total FROM planillas_filtradas
+            ),
+            planillas_paginadas AS (
+                SELECT *
+                FROM planillas_filtradas
+                ORDER BY fecha_creacion DESC
                 LIMIT $4
                 OFFSET $5
             )
 
             SELECT
                 pp.*,
+                tc.total AS total_elements,
+                CEIL(tc.total::decimal / $4)::int AS total_pages,
+                $6::int AS current_page,
+                $4::int AS page_size,
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -112,6 +127,7 @@ export class PlanillaRepository implements IPlanillaRepository {
                     '[]'
                 ) AS votantes
             FROM planillas_paginadas pp
+            CROSS JOIN total_count tc
             LEFT JOIN planilla_votantes pv 
                 ON pv.planilla_id = pp.id
             LEFT JOIN votantes_center vc 
@@ -122,21 +138,47 @@ export class PlanillaRepository implements IPlanillaRepository {
                 pp.nombre_dirigente,
                 pp.fecha_creacion,
                 pp.cedula_planillero,
+                pp.nombre_planillero,
                 pp.total_enviados,
                 pp.total_validos,
-                pp.total_no_existentes
+                pp.total_no_existentes,
+                tc.total
             ORDER BY pp.fecha_creacion DESC;
+
             `,
             [
                 planillaDTO.filterText || null,
                 planillaDTO.dateFrom || null,
                 planillaDTO.dateTo || null,
                 size,
-                offset
+                offset,
+                page
             ]
             );
 
-            return result.rows;
+            const rows = result.rows;
+
+            const totalElements = rows.length > 0 ? Number(rows[0].total_elements) : 0;
+            const totalPages = rows.length > 0 ? Number(rows[0].total_pages) : 0;
+
+            return {
+                page,
+                size,
+                totalElements,
+                totalPages,
+                content: rows.map(row => ({
+                    id: row.id,
+                    cedulaDirigente: row.cedula_dirigente,
+                    nombreDirigente: row.nombre_dirigente,
+                    fechaCreacion: row.fecha_creacion,
+                    cedulaPlanillero: row.cedula_planillero,
+                    nombrePlanillero: row.nombre_planillero,
+                    totalEnviados: row.total_enviados,
+                    totalValidos: row.total_validos,
+                    totalNoExistentes: row.total_no_existentes,
+                    votantes: row.votantes
+                }))
+            };
 
         } catch (error) {
             logger.error({

@@ -194,165 +194,63 @@ const swaggerOptions = {
         },
       },
 
+      // Planilla DTO
+      PlanillaDTO: {
+      type: 'object',
+      properties: {
+        id: { type: 'integer', example: 1 },
+        cedulaDirigente: { type: 'number', example: 1234567 },
+        nombreDirigente: { type: 'string', example: 'Rodolfo Waled' },
+        fechaCreacion: { type: 'string', format: 'date-time', example: '2026-02-19T10:00:00.000Z' },
+        cedulaPlanillero: { type: 'number', example: 9876543 },
+        nombrePlanillero: { type: 'string', example: 'Carlos Gomez' },
+        totalEnviados: { type: 'integer', example: 50 },
+        totalValidos: { type: 'integer', example: 45 },
+        totalNoExistentes: { type: 'integer', example: 5 },
+        votantes: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              cedula_votante: { type: 'number', example: 1234567 },
+              nombre: { type: 'string', example: 'Juan' },
+              apellido: { type: 'string', example: 'Perez' }
+            }
+          }
+        }
+      }
+    },
+
+
       // Planilla Get Validation Response
       PlanillaGetValidationResponse: {
         type: 'object',
         properties: {
-          success: {
-            type: 'boolean',
-            example: true,
+          page: {
+            type: 'integer',
+            example: 1
           },
-          data: {
+          size: {
+            type: 'integer',
+            example: 25
+          },
+          totalElements: {
+            type: 'integer',
+            example: 132
+          },
+          totalPages: {
+            type: 'integer',
+            example: 6
+          },
+          content: {
             type: 'array',
             items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'integer',
-                  example: 1,
-                },
-                cedulaDirigente: {
-                  type: 'number',
-                  example: 1234567,
-                },
-                nombreDirigente: {
-                  type: 'string',
-                  example: 'Rodolfo Waled',
-                },
-                fechaCreacion: {
-                  type: 'string',
-                  example: '2022-01-01',
-                },
-                cedulaPlanillero: {
-                  type: 'number',
-                  example: 1234567,
-                },
-                totalEnviados: {
-                  type: 'integer',
-                  example: 10,
-                },
-                totalValidos: {
-                  type: 'integer',
-                  example: 10,
-                },
-                totalNoExistentes: {
-                  type: 'integer',
-                  example: 10,
-                },
-                votantes: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      cedula: {
-                        type: 'number',
-                        example: 1234567,
-                      },
-                      nombre: {
-                        type: 'string',
-                        example: 'Rodolfo Waled',
-                      },
-                      apellido: {
-                        type: 'string',
-                        example: 'Waled',
-                      },
-                      sexo: {
-                        type: 'string',
-                        example: "masculino"
-                      },
-                      fechaNacimiento: {
-                        type: 'string',
-                        example: '2022-01-01'
-                      },
-                      fechaInscripcion: {
-                        type: 'string',
-                        example: '2022-01-01'
-                      },
-                      tipo: {
-                        type: 'string',
-                        example: 'votante'
-                      },
-                      direccion: {
-                        type: 'string',
-                        example: 'Calle 123'
-                      },
-                      votoPlra: {
-                        type: 'string',
-                        example: 'votoPlra'
-                      },
-                      votoAnr: {
-                        type: 'string',
-                        example: 'votoAnr'
-                      },
-                      votoGenerales: {
-                        type: 'string',
-                        example: 'votoGenerales'
-                      },
-                      afiliaciones: {
-                        type: 'string',
-                        example: 'afiliaciones'
-                      },
-                      afiliadoPlra2025: {
-                        type: 'string',
-                        example: 'afiliadoPlra2025'
-                      },
-                      departamentoNombre: {
-                        type: 'string',
-                        example: 'departamentoNombre'
-                      },
-                      distritoNombre: {
-                        type: 'string',
-                        example: 'distritoNombre'
-                      },
-                      zonaNombre: {
-                        type: 'string',
-                        example: 'zonaNombre'
-                      },
-                      comiteNombre: {
-                        type: 'string',
-                        example: 'comiteNombre'
-                      },
-                      localGenerales: {
-                        type: 'string',
-                        example: 'localGenerales'
-                      },
-                      localInterna: {
-                        type: 'string',
-                        example: 'localInterna'
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-       },
-       DirigenteGetAllResponse: {
-        type: 'object',
-        properties: {
-          success: {
-            type: 'boolean',
-            example: true,
-          },
-          data: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cedulaDirigente: {
-                  type: 'number',
-                  example: 1234567,
-                },
-                nombreDirigente: {
-                  type: 'string',
-                  example: 'Rodolfo Waled',
-                },
-              },
-            },
-          },
-        },
-       }
+              $ref: '#/components/schemas/PlanillaDTO'
+            }
+          }
+        }
+      },
+
       },
     },
   },
