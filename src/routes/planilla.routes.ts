@@ -15,7 +15,7 @@ const planillaController = new PlanillaController(planillaService);
 
 /**
  * @swagger
- * /planilla/create:
+ * /api/planilla/create:
  *   post:
  *     summary: Crear una planilla
  *     tags: [Planilla]
@@ -42,7 +42,7 @@ router.post('/create',
 
 /**
  * @swagger
- * /planilla/obtenerPlanillas:
+ * /api/planilla/obtenerPlanillas:
  *   get:
  *     summary: Obtener planillas
  *     tags: [Planilla]

@@ -14,7 +14,7 @@ const accessCheckoutController = new AccessCheckoutController(planilleroService)
 
 /**
  * @swagger
- * /access/login:
+ * /api/access/login:
  *   post:
  *     tags: [Access]
  *     summary: Iniciar sesión
@@ -43,7 +43,7 @@ router.post('/login',
 
 /**
  * @swagger
- * /access/register:
+ * /api/access/register:
  *   post:
  *     tags: [Access]
  *     summary: Registrar planillero

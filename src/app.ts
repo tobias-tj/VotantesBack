@@ -7,6 +7,7 @@ import votanteRoutes from './routes/votante.routes';
 import { errorHandler } from './middlewares/errorHandler';
 import planillaRoutes from './routes/planilla.routes';
 import accessCheckoutRoutes from './routes/access.routes';
+import dirigenteRoutes from './routes/dirigente.routes';
 
 const app = express();
 
@@ -327,6 +328,31 @@ const swaggerOptions = {
           },
         },
        },
+       DirigenteGetAllResponse: {
+        type: 'object',
+        properties: {
+          success: {
+            type: 'boolean',
+            example: true,
+          },
+          data: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cedulaDirigente: {
+                  type: 'number',
+                  example: 1234567,
+                },
+                nombreDirigente: {
+                  type: 'string',
+                  example: 'Rodolfo Waled',
+                },
+              },
+            },
+          },
+        },
+       }
       },
     },
   },
@@ -337,9 +363,10 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routes
-app.use('/votantes', votanteRoutes);
-app.use('/planilla', planillaRoutes);
-app.use('/access', accessCheckoutRoutes);
+app.use('/api/votantes', votanteRoutes);
+app.use('/api/planilla', planillaRoutes);
+app.use('/api/access', accessCheckoutRoutes);
+app.use('/api/dirigente', dirigenteRoutes);
 
 // Root Endpoint
 app.get('/', (req, res) => {

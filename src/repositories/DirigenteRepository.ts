@@ -1,9 +1,10 @@
-import { CreateDirigenteDTO } from "../models/Dirigente";
+import { CreateDirigenteDTO, GetAllDirigenteResponse } from "../models/Dirigente";
 import { pool } from "../infrastructure/database/dbConnection";
 import logger from "../config/logger";
 
 export interface IDirigenteRepository {
     insertDirigente(dirigente: CreateDirigenteDTO): Promise<boolean>;
+    findAll(): Promise<GetAllDirigenteResponse[]>;
 }
 
 export class DirigenteRepository implements IDirigenteRepository {
@@ -27,5 +28,17 @@ export class DirigenteRepository implements IDirigenteRepository {
         } finally {
             client.release();
         }
+    }
+
+    async findAll(): Promise<GetAllDirigenteResponse[]> {
+        const result = await pool.query(
+            `SELECT cedula_dirigente, nombre_completo
+             FROM dirigentes`
+        );
+        const dirigentes: GetAllDirigenteResponse[] = result.rows.map((row) => ({
+            cedulaDirigente: row.cedula_dirigente,
+            nombreDirigente: row.nombre_completo,
+        }));
+        return dirigentes;
     }
 }

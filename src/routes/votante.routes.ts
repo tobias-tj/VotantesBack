@@ -55,7 +55,7 @@ const votanteController = new VotanteController(votanteService);
  *          type: string
  *        localInterna:
  *          type: string
- * /votantes:
+ * /api/votantes:
  *   get:
  *     summary: Get all votantes
  *     tags: [Votantes]
@@ -73,7 +73,7 @@ router.get('/', votanteController.getAllVotantes);
 
 /**
  * @swagger
- * /votantes/id/{cedula}:
+ * /api/votantes/id/{cedula}:
  *   get:
  *     summary: Get votante by cedula
  *     tags: [Votantes]
@@ -98,7 +98,7 @@ router.get('/id/:cedula', votanteController.getVotanteByCedula);
 
 /**
  * @swagger
- * /votantes/local/{typeLocal}/{localName}:
+ * /api/votantes/local/{typeLocal}/{localName}:
  *   get:
  *     summary: Get votantes by local
  *     tags: [Votantes]
@@ -132,7 +132,7 @@ router.get('/local/:typeLocal/:localName',
 
 /**
  * @swagger
- * /votantes/localInternaOptions:
+ * /api/votantes/localInternaOptions:
  *   get:
  *     summary: Get local interna options
  *     tags: [Votantes]
@@ -150,7 +150,7 @@ router.get('/localInternaOptions', votanteController.getLocalInternaOptions);
 
 /**
  * @swagger
- * /votantes/localGeneralesOptions:
+ * /api/votantes/localGeneralesOptions:
  *   get:
  *     summary: Get local generales options
  *     tags: [Votantes]

@@ -1,0 +1,31 @@
+import { Router } from "express";
+import { DirigenteService } from "../services/DirigenteService";
+import { DirigenteRepository } from "../repositories/DirigenteRepository";
+import { DirigenteController } from "../controllers/DirigenteController";
+import { GetDirigentesValidator } from "../middlewares/GetDirigentesValidator";
+
+const router = Router();
+
+const dirigenteRepository = new DirigenteRepository();
+const dirigenteService = new DirigenteService(dirigenteRepository);
+const dirigenteController = new DirigenteController(dirigenteService);
+
+/**
+ * @swagger
+ * /api/dirigente/:
+ *  get:
+ *    summary: Get all dirigentes
+ *    tags: [Dirigentes]
+ *    security:
+ *       - BearerAuth: []
+ *    responses:
+ *      200:
+ *        description: List of dirigentes
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/DirigenteGetAllResponse'
+ */
+router.get('/',[...GetDirigentesValidator], dirigenteController.getAllDirigentes);
+
+export default router;
