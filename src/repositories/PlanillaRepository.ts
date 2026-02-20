@@ -5,36 +5,36 @@ import { AppError } from "../middlewares/errorHandler";
 import { PaginatedResponse } from "../models/PaginatedResponse";
 
 export interface IPlanillaRepository {
-   createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO>;   
-   getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>>;
-   getEstadisticas(): Promise<GetEstadisticasResponseDTO>;
+    createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO>;
+    getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>>;
+    getEstadisticas(): Promise<GetEstadisticasResponseDTO>;
 }
 
 export class PlanillaRepository implements IPlanillaRepository {
     async createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO> {
-        try{
+        try {
             const result = await pool.query(
-            `SELECT * FROM crear_planilla(
+                `SELECT * FROM crear_planilla(
                 $1::bigint,
                 $2::varchar,
                 $3::bigint,
                 $4::bigint[]
             )`,
-            [
-                planilla.cedulaDirigente,
-                planilla.nombreDirigente,
-                planilla.cedulaPlanillero,
-                planilla.cedulasVotantes
-            ]
-        );
+                [
+                    planilla.cedulaDirigente,
+                    planilla.nombreDirigente,
+                    planilla.cedulaPlanillero,
+                    planilla.cedulasVotantes
+                ]
+            );
 
-        const planillaResponse: PlanillaResponseDTO = {
-            planillaId: result.rows[0].out_planilla_id,
-            cedulasRepetidas: result.rows[0].out_cedulas_repetidas,
-            totalInsertados: result.rows[0].out_total_insertados,
-        };
+            const planillaResponse: PlanillaResponseDTO = {
+                planillaId: result.rows[0].out_planilla_id,
+                cedulasRepetidas: result.rows[0].out_cedulas_repetidas,
+                totalInsertados: result.rows[0].out_total_insertados,
+            };
 
-        return planillaResponse;
+            return planillaResponse;
         } catch (error) {
             logger.error({
                 message: "Error creando planilla",
@@ -53,37 +53,50 @@ export class PlanillaRepository implements IPlanillaRepository {
             const offset = (page - 1) * size;
 
             const result = await pool.query(
-            `
+                `
             WITH planillas_filtradas AS (
-            SELECT
-                p.id,
-                p.cedula_dirigente,
-                d.nombre_completo AS nombre_dirigente,
-                p.fecha_creacion,
-                p.cedula_planillero,
-                pl.nombre_completo AS nombre_planillero,
-                p.total_enviados,
-                p.total_validos,
-                p.total_no_existentes
-            FROM planillas p
-            JOIN dirigentes d 
-                ON d.cedula_dirigente = p.cedula_dirigente
-            JOIN planilleros pl
-                ON pl.cedula_planillero = p.cedula_planillero
-            WHERE
-                (
-                    $1::text IS NULL
-                    OR p.cedula_dirigente::text = $1
-                    OR d.nombre_completo ILIKE '%' || $1 || '%'
-                )
-            AND (
-                    $2::date IS NULL
-                    OR p.fecha_creacion >= $2
-                )
-            AND (
-                    $3::date IS NULL
-                    OR p.fecha_creacion <= $3
-                )
+                SELECT
+                    p.id,
+                    p.cedula_dirigente,
+                    d.nombre_completo AS nombre_dirigente,
+                    p.fecha_creacion,
+                    p.cedula_planillero,
+                    pl.nombre_completo AS nombre_planillero,
+                    p.total_enviados,
+                    COALESCE(v_stats.validos_count, 0) AS total_validos,
+                    p.total_no_existentes
+
+                FROM planillas p
+                JOIN dirigentes d 
+                    ON d.cedula_dirigente = p.cedula_dirigente
+                JOIN planilleros pl
+                    ON pl.cedula_planillero = p.cedula_planillero
+
+                LEFT JOIN LATERAL (
+                    SELECT COUNT(*) AS validos_count
+                    FROM planilla_votantes pv
+                    JOIN votantes_center vc 
+                        ON vc.cedula = pv.cedula_votante
+                    WHERE pv.planilla_id = p.id
+                    AND vc.voto_plra = 'SI'
+                    AND vc.afiliaciones LIKE '%PLRA%'
+                    AND vc.afiliado_plra_2025 = 'SI'
+                ) v_stats ON TRUE
+
+                WHERE
+                    (
+                        $1::text IS NULL
+                        OR p.cedula_dirigente::text = $1
+                        OR d.nombre_completo ILIKE '%' || $1 || '%'
+                    )
+                AND (
+                        $2::date IS NULL
+                        OR p.fecha_creacion >= $2
+                    )
+                AND (
+                        $3::date IS NULL
+                        OR p.fecha_creacion <= $3
+                    )
             ),
             total_count AS (
                 SELECT COUNT(*) AS total FROM planillas_filtradas
@@ -102,6 +115,7 @@ export class PlanillaRepository implements IPlanillaRepository {
                 CEIL(tc.total::decimal / $4)::int AS total_pages,
                 $6::int AS current_page,
                 $4::int AS page_size,
+
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -128,6 +142,7 @@ export class PlanillaRepository implements IPlanillaRepository {
                     ) FILTER (WHERE pv.cedula_votante IS NOT NULL),
                     '[]'
                 ) AS votantes
+
             FROM planillas_paginadas pp
             CROSS JOIN total_count tc
             LEFT JOIN planilla_votantes pv 
@@ -146,40 +161,41 @@ export class PlanillaRepository implements IPlanillaRepository {
                 pp.total_no_existentes,
                 tc.total
             ORDER BY pp.fecha_creacion DESC;
-
             `,
-            [
-                planillaDTO.filterText || null,
-                planillaDTO.dateFrom || null,
-                planillaDTO.dateTo || null,
-                size,
-                offset,
-                page
-            ]
+                [
+                    planillaDTO.filterText || null,
+                    planillaDTO.dateFrom || null,
+                    planillaDTO.dateTo || null,
+                    size,
+                    offset,
+                    page
+                ]
             );
 
             const rows = result.rows;
 
-            const totalElements = rows.length > 0 ? Number(rows[0].total_elements) : 0;
-            const totalPages = rows.length > 0 ? Number(rows[0].total_pages) : 0;
+            const totalElements = Number(rows[0]?.total_elements || 0);
+            const totalPages = Number(rows[0]?.total_pages || 0);
+
+            const content = rows.map(row => ({
+                id: row.id,
+                cedulaDirigente: row.cedula_dirigente,
+                nombreDirigente: row.nombre_dirigente,
+                fechaCreacion: row.fecha_creacion,
+                cedulaPlanillero: row.cedula_planillero,
+                nombrePlanillero: row.nombre_planillero,
+                totalEnviados: Number(row.total_enviados),
+                totalValidos: Number(row.total_validos),
+                totalNoExistentes: Number(row.total_no_existentes),
+                votantes: row.votantes
+            }));
 
             return {
                 page,
                 size,
                 totalElements,
                 totalPages,
-                content: rows.map(row => ({
-                    id: row.id,
-                    cedulaDirigente: row.cedula_dirigente,
-                    nombreDirigente: row.nombre_dirigente,
-                    fechaCreacion: row.fecha_creacion,
-                    cedulaPlanillero: row.cedula_planillero,
-                    nombrePlanillero: row.nombre_planillero,
-                    totalEnviados: row.total_enviados,
-                    totalValidos: row.total_validos,
-                    totalNoExistentes: row.total_no_existentes,
-                    votantes: row.votantes
-                }))
+                content
             };
 
         } catch (error) {
@@ -195,7 +211,7 @@ export class PlanillaRepository implements IPlanillaRepository {
     async getEstadisticas(): Promise<GetEstadisticasResponseDTO> {
         try {
             const result = await pool.query(
-            `
+                `
             SELECT
                 COUNT(*) AS total_planillas,
                 COALESCE(SUM(total_enviados), 0) AS total_enviados,

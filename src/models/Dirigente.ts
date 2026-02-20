@@ -23,5 +23,6 @@ export interface GetDirigentesEstadisticasResponse {
     totalPlanillas: number;
     totalEnviados: number;
     totalNoEncontrados: number;
+    votantesValidos: number;
     planillas: EstadisticaDirigenteDTO[];
 }
