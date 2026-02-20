@@ -6,7 +6,10 @@ const PORT = env.port;
 
 const server = app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
-  logger.info(`Documentation available at http://localhost:${PORT}/api-docs`);
+
+  if (env.nodeEnv !== 'production') {
+    logger.info(`Documentation available at http://localhost:${PORT}/api-docs`);
+  }
 });
 
 // Handle unhandled promise rejections

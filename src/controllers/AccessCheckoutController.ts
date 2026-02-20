@@ -6,45 +6,45 @@ import logger from "../config/logger";
 import jwt from "jsonwebtoken";
 
 
-export class AccessCheckoutController{
-    constructor(private planilleroService: PlanilleroService) {}
+export class AccessCheckoutController {
+    constructor(private planilleroService: PlanilleroService) { }
 
     loginAccount = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
 
-        const { cedulaPlanillero, password } = req.body;
+            const { cedulaPlanillero, password } = req.body;
 
-        const result = await this.planilleroService.loginAccount(
-            Number(cedulaPlanillero),
-            password
-        );
+            const result = await this.planilleroService.loginAccount(
+                Number(cedulaPlanillero),
+                password
+            );
 
-        const token = jwt.sign(
-            {
-                cedulaPlanillero: result.cedulaPlanillero,
-                nombreCompleto: result.nombreCompleto,
-                isAdmin: result.isAdmin,
-            },
-            SECRET_KEY || '',
-            {
-                expiresIn: '1h',
-            },  
-        );
+            const token = jwt.sign(
+                {
+                    cedulaPlanillero: result.cedulaPlanillero,
+                    nombreCompleto: result.nombreCompleto,
+                    isAdmin: result.isAdmin,
+                },
+                SECRET_KEY || '',
+                {
+                    expiresIn: '1h',
+                },
+            );
 
-      logger.info('El token generado exitosamente');
+            logger.info('El token generado exitosamente');
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                result,
-                token,
-            },
-            message: "Inicio de sesión exitoso"
-        });
+            return res.status(200).json({
+                success: true,
+                data: {
+                    result,
+                    token,
+                },
+                message: "Inicio de sesión exitoso"
+            });
 
         } catch (error) {
             next(error);
@@ -52,29 +52,36 @@ export class AccessCheckoutController{
     };
 
     registerPlanillero = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+        try {
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Registro deshabilitado en producción',
+                });
+            }
+
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { cedulaPlanillero, nombreCompleto, password } = req.body;
+
+            await this.planilleroService.registerPlanillero({
+                cedulaPlanillero: Number(cedulaPlanillero),
+                nombreCompleto,
+                password
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Planillero creado correctamente"
+            });
+
+        } catch (error) {
+            next(error);
         }
-
-        const { cedulaPlanillero, nombreCompleto, password } = req.body;
-
-        await this.planilleroService.registerPlanillero({
-            cedulaPlanillero: Number(cedulaPlanillero),
-            nombreCompleto,
-            password
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "Planillero creado correctamente"
-        });
-
-    } catch (error) {
-        next(error);
-    }
-};
+    };
 
 
 }

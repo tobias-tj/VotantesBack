@@ -37,37 +37,39 @@ const accessCheckoutController = new AccessCheckoutController(planilleroService)
  *       500:
  *         description: Internal server error
  */
-router.post('/login', 
+router.post('/login',
     [...loginValidation],
     accessCheckoutController.loginAccount);
 
-/**
- * @swagger
- * /api/access/register:
- *   post:
- *     tags: [Access]
- *     summary: Registrar planillero
- *     description: Registrar planillero con cédula y contraseña
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Register'
- *     responses:
- *       201:
- *         description: Planillero registrado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RegisterResponse'
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
- */
-router.post('/register', 
-    [...registerValidation],
-    accessCheckoutController.registerPlanillero);
+if (process.env.NODE_ENV !== 'production') {
+    /**
+* @swagger
+* /api/access/register:
+*   post:
+*     tags: [Access]
+*     summary: Registrar planillero
+*     description: Registrar planillero con cédula y contraseña
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             $ref: '#/components/schemas/Register'
+*     responses:
+*       201:
+*         description: Planillero registrado exitosamente
+*         content:
+*           application/json:
+*             schema:
+*               $ref: '#/components/schemas/RegisterResponse'
+*       400:
+*         description: Bad request
+*       500:
+*         description: Internal server error
+*/
+    router.post('/register',
+        [...registerValidation],
+        accessCheckoutController.registerPlanillero);
+}
 
 export default router;

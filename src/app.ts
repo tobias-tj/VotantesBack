@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Swagger Configuration
@@ -37,7 +37,7 @@ const swaggerOptions = {
           scheme: 'bearer',
           bearerFormat: 'JWT',
         },
-      },  
+      },
       schemas: {
         // LOGIN REQUEST
         Login: {
@@ -172,171 +172,173 @@ const swaggerOptions = {
           },
         },
         // PLANILLA GET VALIDATION
-      PlanillaGetValidation: {
-        type: 'object',
-        properties: {
-          filterText: {
-            type: 'string',
-            example: 'text',
-          },
-          filterDate: {
-            type: 'string',
-            example: '2022-01-01',
-          },
-          filterSize: {
-            type: 'integer',
-            example: 10,
-          },
-          filterPage: {
-            type: 'integer',
-            example: 1,
+        PlanillaGetValidation: {
+          type: 'object',
+          properties: {
+            filterText: {
+              type: 'string',
+              example: 'text',
+            },
+            filterDate: {
+              type: 'string',
+              example: '2022-01-01',
+            },
+            filterSize: {
+              type: 'integer',
+              example: 10,
+            },
+            filterPage: {
+              type: 'integer',
+              example: 1,
+            },
           },
         },
-      },
 
-      // Planilla DTO
-      PlanillaDTO: {
-      type: 'object',
-      properties: {
-        id: { type: 'integer', example: 1 },
-        cedulaDirigente: { type: 'number', example: 1234567 },
-        nombreDirigente: { type: 'string', example: 'Rodolfo Waled' },
-        fechaCreacion: { type: 'string', format: 'date-time', example: '2026-02-19T10:00:00.000Z' },
-        cedulaPlanillero: { type: 'number', example: 9876543 },
-        nombrePlanillero: { type: 'string', example: 'Carlos Gomez' },
-        totalEnviados: { type: 'integer', example: 50 },
-        totalValidos: { type: 'integer', example: 45 },
-        totalNoExistentes: { type: 'integer', example: 5 },
-        votantes: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              cedula_votante: { type: 'number', example: 1234567 },
-              nombre: { type: 'string', example: 'Juan' },
-              apellido: { type: 'string', example: 'Perez' }
+        // Planilla DTO
+        PlanillaDTO: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            cedulaDirigente: { type: 'number', example: 1234567 },
+            nombreDirigente: { type: 'string', example: 'Rodolfo Waled' },
+            fechaCreacion: { type: 'string', format: 'date-time', example: '2026-02-19T10:00:00.000Z' },
+            cedulaPlanillero: { type: 'number', example: 9876543 },
+            nombrePlanillero: { type: 'string', example: 'Carlos Gomez' },
+            totalEnviados: { type: 'integer', example: 50 },
+            totalValidos: { type: 'integer', example: 45 },
+            totalNoExistentes: { type: 'integer', example: 5 },
+            votantes: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  cedula_votante: { type: 'number', example: 1234567 },
+                  nombre: { type: 'string', example: 'Juan' },
+                  apellido: { type: 'string', example: 'Perez' }
+                }
+              }
             }
           }
-        }
-      }
-    },
+        },
 
 
-      // Planilla Get Validation Response
-      PlanillaGetValidationResponse: {
-        type: 'object',
-        properties: {
-          page: {
-            type: 'integer',
-            example: 1
-          },
-          size: {
-            type: 'integer',
-            example: 25
-          },
-          totalElements: {
-            type: 'integer',
-            example: 132
-          },
-          totalPages: {
-            type: 'integer',
-            example: 6
-          },
-          content: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/PlanillaDTO'
+        // Planilla Get Validation Response
+        PlanillaGetValidationResponse: {
+          type: 'object',
+          properties: {
+            page: {
+              type: 'integer',
+              example: 1
+            },
+            size: {
+              type: 'integer',
+              example: 25
+            },
+            totalElements: {
+              type: 'integer',
+              example: 132
+            },
+            totalPages: {
+              type: 'integer',
+              example: 6
+            },
+            content: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/PlanillaDTO'
+              }
             }
           }
-        }
-      },
+        },
 
-      // Get Estadisticas Response DTO
-      GetEstadisticasResponseDTO: {
-        type: 'object',
-        properties: {
-          totalPlanillas: {
-            type: 'integer',
-            example: 10
-          },
-          totalEnviados: {
-            type: 'integer',
-            example: 100
-          },
-          totalValidos: {
-            type: 'integer',
-            example: 90
-          },
-          totalNoEncontrados: {
-            type: 'integer',
-            example: 10
-          }
-        }
-      },
-
-      // Dirigente Get Estadisticas Response DTO
-      DirigenteGetEstadisticasResponse: {
-        type: 'object',
-        properties: {
-          cedulaDirigente: {
-            type: 'integer',
-            example: 1234567
-          },
-          nombreDirigente: {
-            type: 'string',
-            example: 'Rodolfo Waled'
-          },
-          totalPlanillas: {
-            type: 'integer',
-            example: 10
-          },
-          totalEnviados: {
-            type: 'integer',
-            example: 100
-          },
-          totalNoEncontrados: {
-            type: 'integer',
-            example: 10
-          },
-          planillas: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/EstadisticaDirigenteDTO'
+        // Get Estadisticas Response DTO
+        GetEstadisticasResponseDTO: {
+          type: 'object',
+          properties: {
+            totalPlanillas: {
+              type: 'integer',
+              example: 10
+            },
+            totalEnviados: {
+              type: 'integer',
+              example: 100
+            },
+            totalValidos: {
+              type: 'integer',
+              example: 90
+            },
+            totalNoEncontrados: {
+              type: 'integer',
+              example: 10
             }
           }
-        }
-      },
+        },
 
-      // Estadistica Dirigente DTO
-      EstadisticaDirigenteDTO: {
-        type: 'object',
-        properties: {
-          planillaId: {
-            type: 'integer',
-            example: 1
-          },
-          fechaCreacion: {
-            type: 'string',
-            example: '2022-01-01'
-          },
-          totalEnviados: {
-            type: 'integer',
-            example: 10
-          },
-          totalNoEncontrados: {
-            type: 'integer',
-            example: 10
+        // Dirigente Get Estadisticas Response DTO
+        DirigenteGetEstadisticasResponse: {
+          type: 'object',
+          properties: {
+            cedulaDirigente: {
+              type: 'integer',
+              example: 1234567
+            },
+            nombreDirigente: {
+              type: 'string',
+              example: 'Rodolfo Waled'
+            },
+            totalPlanillas: {
+              type: 'integer',
+              example: 10
+            },
+            totalEnviados: {
+              type: 'integer',
+              example: 100
+            },
+            totalNoEncontrados: {
+              type: 'integer',
+              example: 10
+            },
+            planillas: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/EstadisticaDirigenteDTO'
+              }
+            }
           }
-        }
-      },
+        },
+
+        // Estadistica Dirigente DTO
+        EstadisticaDirigenteDTO: {
+          type: 'object',
+          properties: {
+            planillaId: {
+              type: 'integer',
+              example: 1
+            },
+            fechaCreacion: {
+              type: 'string',
+              example: '2022-01-01'
+            },
+            totalEnviados: {
+              type: 'integer',
+              example: 10
+            },
+            totalNoEncontrados: {
+              type: 'integer',
+              example: 10
+            }
+          }
+        },
       },
     },
   },
   apis: ['./src/routes/*.ts'], // Path to the API docs
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+if (env.nodeEnv !== 'production') {
+  const swaggerDocs = swaggerJsDoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+}
 
 // Routes
 app.use('/api/votantes', votanteRoutes);
@@ -346,10 +348,16 @@ app.use('/api/dirigente', dirigenteRoutes);
 
 // Root Endpoint
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the API',
-    docs: `http://localhost:${env.port}/api-docs`,
-  });
+  if (env.nodeEnv !== 'production') {
+    res.json({
+      message: 'Welcome to the Votantes API',
+      docs: `http://localhost:${env.port}/api-docs`,
+    });
+  } else {
+    res.json({
+      message: 'Welcome to the Votantes API',
+    });
+  }
 });
 
 // Error Handling (Must be last)
