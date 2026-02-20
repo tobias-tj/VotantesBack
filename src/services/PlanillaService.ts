@@ -12,4 +12,8 @@ export class PlanillaService {
     async getPlanillas(planillaDTO: GetPlanillaDTO) {
         return await this.planillaRepository.getPlanillas(planillaDTO);
     }
+
+    async getEstadisticas() {
+        return await this.planillaRepository.getEstadisticas();
+    }
 }

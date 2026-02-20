@@ -33,4 +33,11 @@ export interface GetPlanillaResponseDTO{
     votantes: Votante[];   
 }
 
+export interface GetEstadisticasResponseDTO {
+    totalPlanillas: number;
+    totalEnviados: number;
+    totalValidos: number;
+    totalNoEncontrados: number;
+}
+
  

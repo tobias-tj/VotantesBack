@@ -1,5 +1,5 @@
 import { pool } from "../infrastructure/database/dbConnection";
-import { CreatePlanillaDTO, GetPlanillaDTO, GetPlanillaResponseDTO, PlanillaResponseDTO } from "../models/Planilla";
+import { CreatePlanillaDTO, GetEstadisticasResponseDTO, GetPlanillaDTO, GetPlanillaResponseDTO, PlanillaResponseDTO } from "../models/Planilla";
 import logger from "../config/logger";
 import { AppError } from "../middlewares/errorHandler";
 import { PaginatedResponse } from "../models/PaginatedResponse";
@@ -7,6 +7,7 @@ import { PaginatedResponse } from "../models/PaginatedResponse";
 export interface IPlanillaRepository {
    createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO>;   
    getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>>;
+   getEstadisticas(): Promise<GetEstadisticasResponseDTO>;
 }
 
 export class PlanillaRepository implements IPlanillaRepository {
@@ -187,6 +188,36 @@ export class PlanillaRepository implements IPlanillaRepository {
                 error
             });
             throw new AppError('No se pudo obtener las planillas', 400);
+        }
+    }
+
+    async getEstadisticas(): Promise<GetEstadisticasResponseDTO> {
+        try {
+            const result = await pool.query(
+            `
+            SELECT
+                COUNT(*) AS total_planillas,
+                COALESCE(SUM(total_enviados), 0) AS total_enviados,
+                COALESCE(SUM(total_validos), 0) AS total_validos,
+                COALESCE(SUM(total_no_existentes), 0) AS total_no_encontrados
+            FROM planillas;
+            `
+            );
+            const row = result.rows[0];
+
+            return {
+                totalPlanillas: Number(row.total_planillas),
+                totalEnviados: Number(row.total_enviados),
+                totalValidos: Number(row.total_validos),
+                totalNoEncontrados: Number(row.total_no_encontrados)
+            };
+
+        } catch (error) {
+            logger.error({
+                message: "Error obteniendo estadisticas",
+                error
+            });
+            throw new AppError('No se pudo obtener las estadisticas', 400);
         }
     }
 

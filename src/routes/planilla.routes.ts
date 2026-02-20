@@ -4,6 +4,7 @@ import { PlanillaService } from "../services/PlanillaService";
 import { PlanillaController } from "../controllers/PlanillaController";
 import { planillaCreateValidation } from "../middlewares/planillaCreateValidation";
 import { planillaGetValidation } from "../middlewares/planillaGetValidation";
+import { planillaGetEstadisticasValidation } from "../middlewares/planillaGetEstadisticas";
 
 const router = Router();
 
@@ -88,5 +89,23 @@ router.post('/create',
  *               $ref: '#/components/schemas/PlanillaGetValidationResponse'
  */
 router.get('/obtenerPlanillas',[...planillaGetValidation], planillaController.getPlanillas);
+
+/**
+ * @swagger
+ * /api/planilla/obtenerEstadisticas:
+ *   get:
+ *     summary: Obtener estadisticas
+ *     tags: [Planilla]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadisticas obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GetEstadisticasResponseDTO'
+ */
+router.get('/obtenerEstadisticas', [...planillaGetEstadisticasValidation], planillaController.getEstadisticas);
 
 export default router;

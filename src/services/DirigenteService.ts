@@ -19,4 +19,8 @@ export class DirigenteService {
     async getAllDirigentes(){
         return this.dirigenteRepository.findAll();
     }
+
+    async getEstadisticas() {
+        return this.dirigenteRepository.getEstadisticas();
+    }
 }

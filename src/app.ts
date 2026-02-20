@@ -251,6 +251,84 @@ const swaggerOptions = {
         }
       },
 
+      // Get Estadisticas Response DTO
+      GetEstadisticasResponseDTO: {
+        type: 'object',
+        properties: {
+          totalPlanillas: {
+            type: 'integer',
+            example: 10
+          },
+          totalEnviados: {
+            type: 'integer',
+            example: 100
+          },
+          totalValidos: {
+            type: 'integer',
+            example: 90
+          },
+          totalNoEncontrados: {
+            type: 'integer',
+            example: 10
+          }
+        }
+      },
+
+      // Dirigente Get Estadisticas Response DTO
+      DirigenteGetEstadisticasResponse: {
+        type: 'object',
+        properties: {
+          cedulaDirigente: {
+            type: 'integer',
+            example: 1234567
+          },
+          nombreDirigente: {
+            type: 'string',
+            example: 'Rodolfo Waled'
+          },
+          totalPlanillas: {
+            type: 'integer',
+            example: 10
+          },
+          totalEnviados: {
+            type: 'integer',
+            example: 100
+          },
+          totalNoEncontrados: {
+            type: 'integer',
+            example: 10
+          },
+          planillas: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/EstadisticaDirigenteDTO'
+            }
+          }
+        }
+      },
+
+      // Estadistica Dirigente DTO
+      EstadisticaDirigenteDTO: {
+        type: 'object',
+        properties: {
+          planillaId: {
+            type: 'integer',
+            example: 1
+          },
+          fechaCreacion: {
+            type: 'string',
+            example: '2022-01-01'
+          },
+          totalEnviados: {
+            type: 'integer',
+            example: 10
+          },
+          totalNoEncontrados: {
+            type: 'integer',
+            example: 10
+          }
+        }
+      },
       },
     },
   },
