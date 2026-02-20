@@ -49,17 +49,23 @@ export class PlanillaController {
 
             const planillaResponse = await this.planillaService.createPlanilla(planilla);      
             
-            if(!planillaResponse.planillaId){
+            if(planillaResponse.totalInsertados === 0 || planillaResponse.totalInsertados === null){
                 if(planillaResponse.cedulasRepetidas.length > 0){
                     return res.status(400).json({
                         success: false,
-                        data: planillaResponse,
+                        data: {
+                            cedulasRepetidas: planillaResponse.cedulasRepetidas,
+                            totalInsertados: planillaResponse.totalInsertados
+                        },
                         message: "Hay cedulas repetidas"
                     });
                 }
                 return res.status(400).json({
                     success: false,
-                    data: planillaResponse,
+                    data: {
+                        cedulasRepetidas: [],
+                        totalInsertados: 0
+                    },
                     message: "No se pudo crear la planilla"
                 });
             }

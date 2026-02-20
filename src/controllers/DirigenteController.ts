@@ -74,7 +74,7 @@ export class DirigenteController {
       const estadisticas = await this.dirigenteService.getEstadisticas();
 
       res.json({
-        status: 'success',
+        success: true,
         data: estadisticas,
         message: 'Estadisticas obtenidas correctamente'
       });

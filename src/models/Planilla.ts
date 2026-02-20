@@ -10,6 +10,7 @@ export interface CreatePlanillaDTO {
 export interface PlanillaResponseDTO {
     planillaId: number;
     cedulasRepetidas: number[];
+    totalInsertados: number;
 }
 
 export interface GetPlanillaDTO {

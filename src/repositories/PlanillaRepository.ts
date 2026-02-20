@@ -31,6 +31,7 @@ export class PlanillaRepository implements IPlanillaRepository {
         const planillaResponse: PlanillaResponseDTO = {
             planillaId: result.rows[0].out_planilla_id,
             cedulasRepetidas: result.rows[0].out_cedulas_repetidas,
+            totalInsertados: result.rows[0].out_total_insertados,
         };
 
         return planillaResponse;
