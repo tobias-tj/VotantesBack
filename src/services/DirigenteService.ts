@@ -2,7 +2,7 @@ import { CreateDirigenteDTO } from "../models/Dirigente";
 import { IDirigenteRepository } from "../repositories/DirigenteRepository";
 
 export class DirigenteService {
-    constructor(private dirigenteRepository: IDirigenteRepository) {}
+    constructor(private dirigenteRepository: IDirigenteRepository) { }
 
     // async createDirigente(dirigente: CreateDirigenteDTO): Promise<boolean> {
     //     try{
@@ -16,11 +16,11 @@ export class DirigenteService {
     //     }
     // }
 
-    async getAllDirigentes(){
-        return this.dirigenteRepository.findAll();
+    async getAllDirigentes(selectedCityType: number) {
+        return this.dirigenteRepository.findAll(selectedCityType);
     }
 
-    async getEstadisticas() {
-        return this.dirigenteRepository.getEstadisticas();
+    async getEstadisticas(selectedCityType: number) {
+        return this.dirigenteRepository.getEstadisticas(selectedCityType);
     }
 }

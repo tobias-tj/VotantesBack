@@ -1,14 +1,15 @@
 import bcrypt from 'bcrypt';
 import logger from "../config/logger";
-import { pool } from "../infrastructure/database/dbConnection";
 import { AppError } from "../middlewares/errorHandler";
 import { CreatePlanilleroDTO } from '../models/Planillero';
 import { LoginResponse } from '../models/Access';
+import { getPoolByType } from '../infrastructure/database/dbConnection';
 
 export interface IPlanilleroRepository {
     loginAccount(
         cedulaPlanillero: number,
-        password: string
+        password: string,
+        selectedCityType: number
     ): Promise<LoginResponse>;
     registerPlanillero(data: CreatePlanilleroDTO): Promise<void>
 }
@@ -17,10 +18,13 @@ export class PlanilleroRepository implements IPlanilleroRepository {
 
     async loginAccount(
         cedulaPlanillero: number,
-        password: string
+        password: string,
+        selectedCityType: number
     ): Promise<LoginResponse> {
 
-        const result = await pool.query(
+        const db = getPoolByType(selectedCityType);
+
+        const result = await db.query(
             `SELECT cedula_planillero, nombre_completo, password_hash, rol
              FROM planilleros
              WHERE cedula_planillero = $1`,
@@ -50,8 +54,9 @@ export class PlanilleroRepository implements IPlanilleroRepository {
     }
 
     async registerPlanillero(data: CreatePlanilleroDTO): Promise<void> {
+        const db = getPoolByType(data.selectedCityType);
 
-        const existing = await pool.query(
+        const existing = await db.query(
             `SELECT 1 FROM planilleros WHERE cedula_planillero = $1`,
             [data.cedulaPlanillero]
         );
@@ -62,7 +67,7 @@ export class PlanilleroRepository implements IPlanilleroRepository {
 
         const passwordHash = await bcrypt.hash(data.password, 12);
 
-        await pool.query(
+        await db.query(
             `INSERT INTO planilleros 
             (cedula_planillero, nombre_completo, password_hash)
             VALUES ($1, $2, $3)`,

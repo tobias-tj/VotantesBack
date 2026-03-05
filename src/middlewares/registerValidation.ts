@@ -14,4 +14,7 @@ export const registerValidation = [
         .notEmpty().withMessage('La contraseña es requerida')
         .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres')
         .isLength({ max: 20 }).withMessage('La contraseña debe tener a lo sumo 18 caracteres'),
+    body('selectedCityType')
+        .notEmpty().withMessage('El tipo de ciudad es requerido')
+        .isNumeric().withMessage('El tipo de ciudad debe ser numerico')
 ]

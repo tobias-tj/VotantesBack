@@ -4,7 +4,7 @@ import { decodeToken } from "../middlewares/jwtMiddleware";
 import { validationResult } from "express-validator";
 
 export class DirigenteController {
-  constructor(private dirigenteService: DirigenteService) {}
+  constructor(private dirigenteService: DirigenteService) { }
 
   getAllDirigentes = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,13 +23,13 @@ export class DirigenteController {
 
       const decoded = decodeToken(token);
 
-      if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto) {
+      if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.type === undefined || decoded?.type === null) {
         return res
           .status(401)
           .json({ error: 'Error autenticando Token, faltan datos' });
       }
 
-      const dirigentes = await this.dirigenteService.getAllDirigentes();
+      const dirigentes = await this.dirigenteService.getAllDirigentes(decoded.type);
 
       res.json({
         status: 'success',
@@ -41,7 +41,7 @@ export class DirigenteController {
       next(error);
     }
   };
-  
+
   getEstadisticas = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
@@ -59,7 +59,7 @@ export class DirigenteController {
 
       const decoded = decodeToken(token);
 
-      if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.isAdmin === undefined) {
+      if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.isAdmin === undefined || decoded?.type === undefined || decoded?.type === null) {
         return res
           .status(401)
           .json({ error: 'Error autenticando Token, faltan datos' });
@@ -71,7 +71,7 @@ export class DirigenteController {
           .json({ error: 'No tienes permisos para realizar esta accion' });
       }
 
-      const estadisticas = await this.dirigenteService.getEstadisticas();
+      const estadisticas = await this.dirigenteService.getEstadisticas(decoded.type);
 
       res.json({
         success: true,

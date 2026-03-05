@@ -3,7 +3,7 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import { env } from './config/env';
-import votanteRoutes from './routes/votante.routes';
+// import votanteRoutes from './routes/votante.routes';
 import { errorHandler } from './middlewares/errorHandler';
 import planillaRoutes from './routes/planilla.routes';
 import accessCheckoutRoutes from './routes/access.routes';
@@ -42,7 +42,7 @@ const swaggerOptions = {
         // LOGIN REQUEST
         Login: {
           type: 'object',
-          required: ['cedulaPlanillero', 'password'],
+          required: ['cedulaPlanillero', 'password', 'selectedCityType'],
           properties: {
             cedulaPlanillero: {
               type: 'number',
@@ -51,6 +51,10 @@ const swaggerOptions = {
             password: {
               type: 'string',
               example: 'password',
+            },
+            selectedCityType: {
+              type: 'number',
+              example: 0,
             },
           },
         },
@@ -76,6 +80,10 @@ const swaggerOptions = {
                     isAdmin: {
                       type: 'boolean',
                       example: true,
+                    },
+                    selectedCityType: {
+                      type: 'number',
+                      example: 0,
                     },
                   },
                 },
@@ -108,6 +116,10 @@ const swaggerOptions = {
             password: {
               type: 'string',
               example: '123456',
+            },
+            selectedCityType: {
+              type: 'number',
+              example: 0,
             },
           },
         },
@@ -329,6 +341,21 @@ const swaggerOptions = {
             }
           }
         },
+
+        // Planilla Borrada Response DTO
+        PlanillaBorradaResponseDTO: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Planilla borrada exitosamente'
+            }
+          }
+        }
       },
     },
   },
@@ -341,7 +368,7 @@ if (env.nodeEnv !== 'production') {
 }
 
 // Routes
-app.use('/api/votantes', votanteRoutes);
+// app.use('/api/votantes', votanteRoutes);
 app.use('/api/planilla', planillaRoutes);
 app.use('/api/access', accessCheckoutRoutes);
 app.use('/api/dirigente', dirigenteRoutes);

@@ -6,7 +6,7 @@ import logger from "../config/logger";
 import { decodeToken } from "../middlewares/jwtMiddleware";
 
 export class PlanillaController {
-    constructor(private planillaService: PlanillaService) {}
+    constructor(private planillaService: PlanillaService) { }
 
     createPlanilla = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -25,7 +25,7 @@ export class PlanillaController {
 
             const decoded = decodeToken(token);
 
-            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto) {
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.type === undefined || decoded?.type === null) {
                 return res
                     .status(401)
                     .json({ error: 'Error autenticando Token, faltan datos' });
@@ -38,19 +38,20 @@ export class PlanillaController {
                 Array.isArray(cedulasVotantes)
                     ? cedulasVotantes
                     : cedulasVotantes.split(',').map((c: string) => Number(c.trim()));
-            
+
 
             const planilla: CreatePlanillaDTO = {
                 cedulaDirigente: Number(cedulaDirigente),
                 nombreDirigente,
                 cedulaPlanillero: decoded.cedulaPlanillero,
                 cedulasVotantes: cedulasArray,
+                selectedCityType: decoded.type
             };
 
-            const planillaResponse = await this.planillaService.createPlanilla(planilla);      
-            
-            if(planillaResponse.totalInsertados === 0 || planillaResponse.totalInsertados === null){
-                if(planillaResponse.cedulasRepetidas.length > 0){
+            const planillaResponse = await this.planillaService.createPlanilla(planilla);
+
+            if (planillaResponse.totalInsertados === 0 || planillaResponse.totalInsertados === null) {
+                if (planillaResponse.cedulasRepetidas.length > 0) {
                     return res.status(400).json({
                         success: false,
                         data: {
@@ -81,7 +82,7 @@ export class PlanillaController {
     };
 
 
-    getPlanillas = async(req: Request, res: Response, next: NextFunction) => {
+    getPlanillas = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -98,7 +99,7 @@ export class PlanillaController {
 
             const decoded = decodeToken(token);
 
-            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto) {
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.type === undefined || decoded?.type === null) {
                 return res
                     .status(401)
                     .json({ error: 'Error autenticando Token, faltan datos' });
@@ -111,7 +112,8 @@ export class PlanillaController {
                 dateFrom: dateFrom as string,
                 dateTo: dateTo as string,
                 filterSize: Number(filterSize ?? 25),
-                filterPage: Number(filterPage ?? 1)
+                filterPage: Number(filterPage ?? 1),
+                selectedCityType: decoded.type
             };
 
             const planillas = await this.planillaService.getPlanillas(planillaDTO);
@@ -122,7 +124,7 @@ export class PlanillaController {
         }
     }
 
-    getEstadisticas = async(req: Request, res: Response, next: NextFunction) => {
+    getEstadisticas = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -139,7 +141,7 @@ export class PlanillaController {
 
             const decoded = decodeToken(token);
 
-            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.isAdmin === undefined) {
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.isAdmin === undefined || decoded?.isAdmin === null || decoded?.type === undefined || decoded?.type === null) {
                 return res
                     .status(401)
                     .json({ error: 'Error autenticando Token, faltan datos' });
@@ -151,12 +153,62 @@ export class PlanillaController {
                     .json({ error: 'No tienes permisos para realizar esta accion' });
             }
 
-            const estadisticas = await this.planillaService.getEstadisticas();
+            const estadisticas = await this.planillaService.getEstadisticas(decoded.type);
 
             return res.status(200).json({
                 success: true,
                 data: estadisticas,
                 message: "Estadisticas obtenidas exitosamente"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    deletePlanilla = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const authHeader = req.headers.authorization;
+            const token =
+                authHeader && authHeader.startsWith('Bearer ')
+                    ? authHeader.substring(7)
+                    : null;
+
+            if (!token) return res.status(401);
+
+            const decoded = decodeToken(token);
+
+            if (!decoded?.cedulaPlanillero || !decoded?.nombreCompleto || decoded?.isAdmin === undefined || decoded?.isAdmin === null || decoded?.type === undefined || decoded?.type === null) {
+                return res
+                    .status(401)
+                    .json({ error: 'Error autenticando Token, faltan datos' });
+            }
+
+            if (!decoded.isAdmin) {
+                return res
+                    .status(403)
+                    .json({ error: 'No tienes permisos para realizar esta accion' });
+            }
+
+            const { idPlanilla } = req.params;
+            const { deleteDirigente } = req.query;
+
+            const isPlanillaDeleted = await this.planillaService.deletePlanilla(Number(idPlanilla), decoded.type, deleteDirigente === 'true');
+
+            if (!isPlanillaDeleted) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No se pudo borrar la planilla"
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Planilla borrada exitosamente"
             });
         } catch (error) {
             next(error);

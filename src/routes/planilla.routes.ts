@@ -5,6 +5,7 @@ import { PlanillaController } from "../controllers/PlanillaController";
 import { planillaCreateValidation } from "../middlewares/planillaCreateValidation";
 import { planillaGetValidation } from "../middlewares/planillaGetValidation";
 import { planillaGetEstadisticasValidation } from "../middlewares/planillaGetEstadisticas";
+import { planillaDeleteValidation } from "../middlewares/planillaDeleteValidation";
 
 const router = Router();
 
@@ -88,7 +89,7 @@ router.post('/create',
  *             schema:
  *               $ref: '#/components/schemas/PlanillaGetValidationResponse'
  */
-router.get('/obtenerPlanillas',[...planillaGetValidation], planillaController.getPlanillas);
+router.get('/obtenerPlanillas', [...planillaGetValidation], planillaController.getPlanillas);
 
 /**
  * @swagger
@@ -107,5 +108,34 @@ router.get('/obtenerPlanillas',[...planillaGetValidation], planillaController.ge
  *               $ref: '#/components/schemas/GetEstadisticasResponseDTO'
  */
 router.get('/obtenerEstadisticas', [...planillaGetEstadisticasValidation], planillaController.getEstadisticas);
+
+/**
+ * @swagger
+ * /api/planilla/borrar/{idPlanilla}:
+ *   delete:
+ *     summary: Borrar una planilla
+ *     tags: [Planilla]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: idPlanilla
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: deleteDirigente
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Planilla borrada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PlanillaBorradaResponseDTO'
+ */
+router.delete('/borrar/:idPlanilla', [...planillaDeleteValidation], planillaController.deletePlanilla);
 
 export default router;

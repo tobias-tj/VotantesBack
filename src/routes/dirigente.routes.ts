@@ -21,12 +21,8 @@ const dirigenteController = new DirigenteController(dirigenteService);
  *    responses:
  *      200:
  *        description: List of dirigentes
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/DirigenteGetAllResponse'
  */
-router.get('/',[...GetDirigentesValidator], dirigenteController.getAllDirigentes);
+router.get('/', [...GetDirigentesValidator], dirigenteController.getAllDirigentes);
 
 /**
  * @swagger

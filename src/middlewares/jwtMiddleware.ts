@@ -5,6 +5,7 @@ interface DecodedToken {
   cedulaPlanillero: number;
   nombreCompleto: string;
   isAdmin: boolean;
+  type: number;
   iat: number;
   exp: number;
 }
@@ -28,6 +29,7 @@ export const decodeToken = (token: string): DecodedToken | null => {
       cedulaPlanillero: decoded.cedulaPlanillero,
       nombreCompleto: decoded.nombreCompleto,
       isAdmin: decoded.isAdmin,
+      type: decoded.type,
       iat: decoded.iat,
       exp: decoded.exp,
     };

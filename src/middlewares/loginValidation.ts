@@ -7,4 +7,5 @@ export const loginValidation = [
     .isNumeric()
     .withMessage('Debe ser un numero valido'),
   body('password').notEmpty().withMessage('El password es obligatorio'),
+  body('selectedCityType').notEmpty().withMessage('El tipo de ciudad es obligatorio').isNumeric().withMessage('Debe ser un numero valido'),
 ];

@@ -1,19 +1,21 @@
-import { pool } from "../infrastructure/database/dbConnection";
 import { CreatePlanillaDTO, GetEstadisticasResponseDTO, GetPlanillaDTO, GetPlanillaResponseDTO, PlanillaResponseDTO } from "../models/Planilla";
 import logger from "../config/logger";
 import { AppError } from "../middlewares/errorHandler";
 import { PaginatedResponse } from "../models/PaginatedResponse";
+import { getPoolByType } from "../infrastructure/database/dbConnection";
 
 export interface IPlanillaRepository {
     createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO>;
     getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>>;
-    getEstadisticas(): Promise<GetEstadisticasResponseDTO>;
+    getEstadisticas(selectedCityType: number): Promise<GetEstadisticasResponseDTO>;
+    deletePlanilla(idPlanilla: number, selectedCityType: number, deleteDirigente: boolean): Promise<boolean>;
 }
 
 export class PlanillaRepository implements IPlanillaRepository {
     async createPlanilla(planilla: CreatePlanillaDTO): Promise<PlanillaResponseDTO> {
         try {
-            const result = await pool.query(
+            const db = getPoolByType(planilla.selectedCityType);
+            const result = await db.query(
                 `SELECT * FROM crear_planilla(
                 $1::bigint,
                 $2::varchar,
@@ -47,12 +49,13 @@ export class PlanillaRepository implements IPlanillaRepository {
 
     async getPlanillas(planillaDTO: GetPlanillaDTO): Promise<PaginatedResponse<GetPlanillaResponseDTO>> {
         try {
+            const db = getPoolByType(planillaDTO.selectedCityType);
 
             const size = Math.min(planillaDTO.filterSize || 25, 25);
             const page = planillaDTO.filterPage || 1;
             const offset = (page - 1) * size;
 
-            const result = await pool.query(
+            const result = await db.query(
                 `
             WITH planillas_filtradas AS (
                 SELECT
@@ -141,7 +144,20 @@ export class PlanillaRepository implements IPlanillaRepository {
                         )
                     ) FILTER (WHERE pv.cedula_votante IS NOT NULL),
                     '[]'
-                ) AS votantes
+                ) AS votantes,
+                COALESCE(
+                    (
+                        SELECT json_agg(
+                            json_build_object(
+                                'cedula_intentada', pne.cedula_intentada,
+                                'fecha_registro', pne.fecha_registro
+                            )
+                        )
+                        FROM planilla_no_encontrados pne
+                        WHERE pne.planilla_id = pp.id
+                    ),
+                    '[]'
+                ) AS no_encontrados
 
             FROM planillas_paginadas pp
             CROSS JOIN total_count tc
@@ -187,7 +203,8 @@ export class PlanillaRepository implements IPlanillaRepository {
                 totalEnviados: Number(row.total_enviados),
                 totalValidos: Number(row.total_validos),
                 totalNoExistentes: Number(row.total_no_existentes),
-                votantes: row.votantes
+                votantes: row.votantes,
+                noEncontrados: row.no_encontrados
             }));
 
             return {
@@ -208,9 +225,10 @@ export class PlanillaRepository implements IPlanillaRepository {
         }
     }
 
-    async getEstadisticas(): Promise<GetEstadisticasResponseDTO> {
+    async getEstadisticas(selectedCityType: number): Promise<GetEstadisticasResponseDTO> {
         try {
-            const result = await pool.query(
+            const db = getPoolByType(selectedCityType);
+            const result = await db.query(
                 `
             SELECT
                 COUNT(*) AS total_planillas,
@@ -235,6 +253,65 @@ export class PlanillaRepository implements IPlanillaRepository {
                 error
             });
             throw new AppError('No se pudo obtener las estadisticas', 400);
+        }
+    }
+
+    async deletePlanilla(
+        idPlanilla: number,
+        selectedCityType: number,
+        deleteDirigente: boolean
+    ): Promise<boolean> {
+        const db = getPoolByType(selectedCityType);
+        const client = await db.connect();
+
+        try {
+            await client.query("BEGIN");
+
+            // Obtener cedula del dirigente asociada a la planilla
+            const planillaResult = await client.query(
+                `SELECT cedula_dirigente 
+             FROM planillas 
+             WHERE id = $1`,
+                [idPlanilla]
+            );
+
+            if (planillaResult.rowCount === 0) {
+                await client.query("ROLLBACK");
+                return false;
+            }
+
+            const cedulaDirigente = planillaResult.rows[0].cedula_dirigente;
+
+            // Borrar planilla (esto borra automáticamente votantes y no_encontrados)
+            await client.query(
+                `DELETE FROM planillas WHERE id = $1`,
+                [idPlanilla]
+            );
+
+            // Si se pidió borrar dirigente
+            if (deleteDirigente) {
+                await client.query(
+                    `DELETE FROM dirigentes WHERE cedula_dirigente = $1`,
+                    [cedulaDirigente]
+                );
+            }
+
+            await client.query("COMMIT");
+            return true;
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+
+            logger.error({
+                message: "Error borrando planilla",
+                idPlanilla,
+                deleteDirigente,
+                error
+            });
+
+            throw new AppError("No se pudo borrar la planilla", 400);
+        } finally {
+            client.release();
         }
     }
 

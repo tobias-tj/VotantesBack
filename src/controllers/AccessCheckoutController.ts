@@ -16,11 +16,12 @@ export class AccessCheckoutController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { cedulaPlanillero, password } = req.body;
+            const { cedulaPlanillero, password, selectedCityType } = req.body;
 
             const result = await this.planilleroService.loginAccount(
                 Number(cedulaPlanillero),
-                password
+                password,
+                Number(selectedCityType)
             );
 
             const token = jwt.sign(
@@ -28,6 +29,7 @@ export class AccessCheckoutController {
                     cedulaPlanillero: result.cedulaPlanillero,
                     nombreCompleto: result.nombreCompleto,
                     isAdmin: result.isAdmin,
+                    type: selectedCityType
                 },
                 SECRET_KEY || '',
                 {
@@ -65,12 +67,13 @@ export class AccessCheckoutController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { cedulaPlanillero, nombreCompleto, password } = req.body;
+            const { cedulaPlanillero, nombreCompleto, password, selectedCityType } = req.body;
 
             await this.planilleroService.registerPlanillero({
                 cedulaPlanillero: Number(cedulaPlanillero),
                 nombreCompleto,
-                password
+                password,
+                selectedCityType: Number(selectedCityType)
             });
 
             return res.status(201).json({

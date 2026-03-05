@@ -1,23 +1,35 @@
-// src/infrastructure/database/dbConnection.ts
 import { Pool } from 'pg'
 import dotenv from 'dotenv'
 import logger from '../../config/logger'
 
-
 dotenv.config()
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Required for Neon
-  },
+const pools: Record<number, Pool> = {
+  0: new Pool({
+    connectionString: process.env.DATABASE_URL_FERNANDO,
+    ssl: { rejectUnauthorized: false },
+  }),
+  1: new Pool({
+    connectionString: process.env.DATABASE_URL_ASUNCION,
+    ssl: { rejectUnauthorized: false },
+  }),
+}
+
+// Logs
+Object.values(pools).forEach((pool, index) => {
+  pool.on('connect', () => {
+    logger.info(`PostgreSQL connected successfully (type ${index})`)
+  })
+
+  pool.on('error', (err) => {
+    logger.error(`Unexpected PostgreSQL error (type ${index})`, err)
+  })
 })
 
-pool.on('connect', () => {
-  logger.info('PostgreSQL connected successfully')
-})
-
-pool.on('error', (err) => {
-  logger.error('Unexpected error on PostgreSQL client', err)
-  process.exit(1)
-})
+export const getPoolByType = (type: number): Pool => {
+  const pool = pools[type]
+  if (!pool) {
+    throw new Error('La base de datos que intentas conectarte no es accesible')
+  }
+  return pool
+}

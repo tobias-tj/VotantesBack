@@ -5,6 +5,7 @@ export interface CreatePlanillaDTO {
     nombreDirigente: string;
     cedulaPlanillero: number;
     cedulasVotantes: number[];
+    selectedCityType: number;
 }
 
 export interface PlanillaResponseDTO {
@@ -19,9 +20,10 @@ export interface GetPlanillaDTO {
     dateTo?: string;
     filterSize: number;
     filterPage: number;
+    selectedCityType: number;
 }
 
-export interface GetPlanillaResponseDTO{
+export interface GetPlanillaResponseDTO {
     id: number;
     cedulaDirigente: number;
     nombreDirigente: string;
@@ -31,7 +33,7 @@ export interface GetPlanillaResponseDTO{
     totalEnviados: number;
     totalValidos: number;
     totalNoExistentes: number;
-    votantes: Votante[];   
+    votantes: Votante[];
 }
 
 export interface GetEstadisticasResponseDTO {
@@ -41,4 +43,3 @@ export interface GetEstadisticasResponseDTO {
     totalNoEncontrados: number;
 }
 
- 
